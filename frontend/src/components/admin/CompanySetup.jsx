@@ -11,9 +11,14 @@ import { toast } from 'sonner'
 import { useSelector } from 'react-redux'
 import useGetCompanyById from '@/hooks/useGetCompanyById'
 
+// Second step of company onboarding: full edit form for an existing company's
+// details (name, description, website, location, logo)
 const CompanySetup = () => {
-    const params = useParams();
+    const params = useParams(); // company ID from the URL
+    // Custom hook that fetches the company by ID and populates Redux state on mount
     useGetCompanyById(params.id);
+
+    // Local form state, initially empty and populated once the company data loads
     const [input, setInput] = useState({
         name: "",
         description: "",
@@ -21,19 +26,24 @@ const CompanySetup = () => {
         location: "",
         file: null
     });
+    // The fetched company object from Redux state
     const {singleCompany} = useSelector(store=>store.company);
+    // Tracks in-flight submit request (disables button, shows spinner)
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    // Generic handler for text inputs, updates the matching field by `name` attribute
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
     }
 
+    // Handler for the logo file input
     const changeFileHandler = (e) => {
         const file = e.target.files?.[0];
         setInput({ ...input, file });
     }
 
+    // Submits the updated company info (as multipart form data, since a file may be included)
     const submitHandler = async (e) => {
         e.preventDefault();
         const formData = new FormData();
@@ -41,6 +51,7 @@ const CompanySetup = () => {
         formData.append("description", input.description);
         formData.append("website", input.website);
         formData.append("location", input.location);
+        // Only include the file field if a new logo was actually selected
         if (input.file) {
             formData.append("file", input.file);
         }
@@ -64,6 +75,8 @@ const CompanySetup = () => {
         }
     }
 
+    // Once the company data has loaded into Redux (via useGetCompanyById),
+    // populate the local form state with its current values
     useEffect(() => {
         setInput({
             name: singleCompany.name || "",
@@ -79,6 +92,7 @@ const CompanySetup = () => {
             <Navbar />
             <div className='max-w-xl mx-auto my-10'>
                 <form onSubmit={submitHandler}>
+                    {/* Header row: back button + page title */}
                     <div className='flex items-center gap-5 p-8'>
                         <Button onClick={() => navigate("/admin/companies")} variant="outline" className="flex items-center gap-2 text-gray-500 font-semibold">
                             <ArrowLeft />
@@ -86,6 +100,7 @@ const CompanySetup = () => {
                         </Button>
                         <h1 className='font-bold text-xl'>Company Setup</h1>
                     </div>
+                    {/* Two-column form grid: name, description, website, location, and logo upload */}
                     <div className='grid grid-cols-2 gap-4'>
                         <div>
                             <Label>Company Name</Label>
@@ -101,45 +116,3 @@ const CompanySetup = () => {
                             <Input
                                 type="text"
                                 name="description"
-                                value={input.description}
-                                onChange={changeEventHandler}
-                            />
-                        </div>
-                        <div>
-                            <Label>Website</Label>
-                            <Input
-                                type="text"
-                                name="website"
-                                value={input.website}
-                                onChange={changeEventHandler}
-                            />
-                        </div>
-                        <div>
-                            <Label>Location</Label>
-                            <Input
-                                type="text"
-                                name="location"
-                                value={input.location}
-                                onChange={changeEventHandler}
-                            />
-                        </div>
-                        <div>
-                            <Label>Logo</Label>
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={changeFileHandler}
-                            />
-                        </div>
-                    </div>
-                    {
-                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Update</Button>
-                    }
-                </form>
-            </div>
-
-        </div>
-    )
-}
-
-export default CompanySetup
