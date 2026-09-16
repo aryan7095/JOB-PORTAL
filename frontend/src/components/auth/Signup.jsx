@@ -12,8 +12,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setLoading } from '@/redux/authSlice'
 import { Loader2 } from 'lucide-react'
 
+// Registration page: creates a new account (student or recruiter) with a mandatory profile photo upload
 const Signup = () => {
 
+    // Form field state
     const [input, setInput] = useState({
         fullname: "",
         email: "",
@@ -22,16 +24,20 @@ const Signup = () => {
         role: "",
         file: ""
     });
+    // Loading flag and current user, both from Redux auth state
     const {loading,user} = useSelector(store=>store.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    // Generic handler for text/radio inputs, updates the matching field by `name` attribute
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
     }
+    // Handler for the profile photo file input
     const changeFileHandler = (e) => {
         setInput({ ...input, file: e.target.files?.[0] });
     }
+    // Submits the registration form (as multipart form data, since a profile photo is included)
     const submitHandler = async (e) => {
         e.preventDefault();
         const formData = new FormData();    //formdata object
@@ -40,6 +46,7 @@ const Signup = () => {
         formData.append("phoneNumber", input.phoneNumber);
         formData.append("password", input.password);
         formData.append("role", input.role);
+        // Only include the file field if a photo was actually selected
         if (input.file) {
             formData.append("file", input.file);
         }
@@ -51,6 +58,8 @@ const Signup = () => {
                 withCredentials: true,
             });
             if (res.data.success) {
+                // Registration succeeds — redirect to login (not auto-logged in here,
+                // unlike ShopNest's registration flow)
                 navigate("/login");
                 toast.success(res.data.message);
             }
@@ -62,6 +71,7 @@ const Signup = () => {
         }
     }
 
+    // If the user is already logged in, redirect away from the signup page on mount
     useEffect(()=>{
         if(user){
             navigate("/");
@@ -113,6 +123,7 @@ const Signup = () => {
                             placeholder="patel@gmail.com"
                         />
                     </div>
+                    {/* Role selector and profile photo upload, side by side */}
                     <div className='flex items-center justify-between'>
                         <RadioGroup className="flex items-center gap-4 my-5">
                             <div className="flex items-center space-x-2">
@@ -148,6 +159,7 @@ const Signup = () => {
                             />
                         </div>
                     </div>
+                    {/* Submit button swaps to a loading spinner state while the signup request is in flight */}
                     {
                         loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Signup</Button>
                     }
