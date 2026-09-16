@@ -4,12 +4,19 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// shadcn/ui-style wrapper around Radix's unstyled Select primitives,
+// applying default Tailwind styling/animations while re-exporting the composable pieces
+
+// Root component managing open/closed and selected-value state — passed through directly
 const Select = SelectPrimitive.Root
 
+// Groups related SelectItems together (e.g. under a SelectLabel) — passed through directly
 const SelectGroup = SelectPrimitive.Group
 
+// Displays the currently selected value inside the trigger — passed through directly
 const SelectValue = SelectPrimitive.Value
 
+// The clickable control that opens the dropdown, showing the selected value and a chevron icon
 const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
@@ -26,6 +33,7 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
 ))
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
+// Button shown at the top of a scrollable dropdown list, to scroll further up
 const SelectScrollUpButton = React.forwardRef(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollUpButton
     ref={ref}
@@ -36,6 +44,7 @@ const SelectScrollUpButton = React.forwardRef(({ className, ...props }, ref) => 
 ))
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
 
+// Button shown at the bottom of a scrollable dropdown list, to scroll further down
 const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollDownButton
     ref={ref}
@@ -47,12 +56,15 @@ const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) =
 SelectScrollDownButton.displayName =
   SelectPrimitive.ScrollDownButton.displayName
 
+// The dropdown panel itself: positioned relative to the trigger ("popper" mode by default),
+// rendered in a Portal, with scroll buttons and directional slide-in animations
 const SelectContent = React.forwardRef(({ className, children, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
         "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        // Extra positioning offsets specific to "popper" mode (anchored to the trigger)
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
@@ -62,6 +74,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn("p-1", position === "popper" &&
+          // Match the viewport's width/height to the trigger's dimensions in popper mode
           "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]")}>
         {children}
       </SelectPrimitive.Viewport>
@@ -71,6 +84,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
 ))
 SelectContent.displayName = SelectPrimitive.Content.displayName
 
+// A non-selectable heading label used to group related SelectItems
 const SelectLabel = React.forwardRef(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
@@ -79,6 +93,8 @@ const SelectLabel = React.forwardRef(({ className, ...props }, ref) => (
 ))
 SelectLabel.displayName = SelectPrimitive.Label.displayName
 
+// A single selectable option in the dropdown, showing a checkmark when selected
+// (used in PostJob.jsx's company selector, built from `companies.map(...)`)
 const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
@@ -87,6 +103,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
       className
     )}
     {...props}>
+    {/* Checkmark indicator, only rendered when this item is the selected one */}
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
         <Check className="h-4 w-4" />
@@ -98,6 +115,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
 ))
 SelectItem.displayName = SelectPrimitive.Item.displayName
 
+// A thin horizontal divider line between groups of items
 const SelectSeparator = React.forwardRef(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
