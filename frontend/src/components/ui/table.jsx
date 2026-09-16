@@ -2,6 +2,11 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// shadcn/ui Table components: thin styled wrappers around native HTML table elements
+// (<table>, <thead>, <tbody>, <tr>, <th>, <td>, <caption>), used throughout the admin
+// pages (AdminJobsTable, CompaniesTable, ApplicantsTable)
+
+// Root table element, wrapped in a horizontally scrollable container for responsiveness
 const Table = React.forwardRef(({ className, ...props }, ref) => (
   <div className="relative w-full overflow-auto">
     <table
@@ -12,11 +17,13 @@ const Table = React.forwardRef(({ className, ...props }, ref) => (
 ))
 Table.displayName = "Table"
 
+// Table header section; adds a bottom border to its row(s)
 const TableHeader = React.forwardRef(({ className, ...props }, ref) => (
   <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
 ))
 TableHeader.displayName = "TableHeader"
 
+// Table body section; removes the border from the last row to avoid a double border with the table edge
 const TableBody = React.forwardRef(({ className, ...props }, ref) => (
   <tbody
     ref={ref}
@@ -25,6 +32,7 @@ const TableBody = React.forwardRef(({ className, ...props }, ref) => (
 ))
 TableBody.displayName = "TableBody"
 
+// Table footer section; styled with a top border and muted background, for summary rows
 const TableFooter = React.forwardRef(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
@@ -33,6 +41,7 @@ const TableFooter = React.forwardRef(({ className, ...props }, ref) => (
 ))
 TableFooter.displayName = "TableFooter"
 
+// A single table row, with a bottom border and a subtle hover/selected background highlight
 const TableRow = React.forwardRef(({ className, ...props }, ref) => (
   <tr
     ref={ref}
@@ -44,6 +53,7 @@ const TableRow = React.forwardRef(({ className, ...props }, ref) => (
 ))
 TableRow.displayName = "TableRow"
 
+// A header cell (<th>), muted text color and medium font weight
 const TableHead = React.forwardRef(({ className, ...props }, ref) => (
   <th
     ref={ref}
@@ -55,6 +65,7 @@ const TableHead = React.forwardRef(({ className, ...props }, ref) => (
 ))
 TableHead.displayName = "TableHead"
 
+// A standard data cell (<td>)
 const TableCell = React.forwardRef(({ className, ...props }, ref) => (
   <td
     ref={ref}
@@ -63,6 +74,7 @@ const TableCell = React.forwardRef(({ className, ...props }, ref) => (
 ))
 TableCell.displayName = "TableCell"
 
+// Table caption text, shown below the table in small muted text
 const TableCaption = React.forwardRef(({ className, ...props }, ref) => (
   <caption
     ref={ref}
