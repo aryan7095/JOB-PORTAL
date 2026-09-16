@@ -4,20 +4,25 @@ import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 
+// POST /register - creates a new user account (student or recruiter, via `role`),
+// including a mandatory profile photo upload to Cloudinary
 export const register = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
          
+        // Require all fields to be present
         if (!fullname || !email || !phoneNumber || !password || !role) {
             return res.status(400).json({
                 message: "Something is missing",
                 success: false
             });
         };
-        const file = req.file;
+        const file = req.file; // uploaded profile photo (expects multer middleware upstream, not shown)
+        // Convert the uploaded file buffer into a data URI, then upload it to Cloudinary
         const fileUri = getDataUri(file);
         const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
 
+        // Prevent duplicate accounts for the same email
         const user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({
@@ -25,6 +30,7 @@ export const register = async (req, res) => {
                 success: false,
             })
         }
+        // Hash the password before storing it
         const hashedPassword = await bcrypt.hash(password, 10);
 
         await User.create({
@@ -46,10 +52,14 @@ export const register = async (req, res) => {
         console.log(error);
     }
 }
+
+// POST /login - authenticates a user with email/password, scoped to a specific role
+// (student vs recruiter), and sets an httpOnly auth cookie
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
         
+        // Require all fields to be present
         if (!email || !password || !role) {
             return res.status(400).json({
                 message: "Something is missing",
@@ -57,6 +67,8 @@ export const login = async (req, res) => {
             });
         };
         let user = await User.findOne({ email });
+        // Generic "Incorrect email or password" message for both missing user and wrong password,
+        // to avoid revealing whether an email is registered
         if (!user) {
             return res.status(400).json({
                 message: "Incorrect email or password.",
@@ -71,6 +83,8 @@ export const login = async (req, res) => {
             })
         };
         // check role is correct or not
+        // Ensures a student can't log in through the recruiter role selector (or vice versa),
+        // even with correct credentials
         if (role !== user.role) {
             return res.status(400).json({
                 message: "Account doesn't exist with current role.",
@@ -78,11 +92,13 @@ export const login = async (req, res) => {
             })
         };
 
+        // Sign a JWT containing just the user's ID, valid for 1 day
         const tokenData = {
             userId: user._id
         }
         const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
 
+        // Strip sensitive fields (like password) before sending the user object back
         user = {
             _id: user._id,
             fullname: user.fullname,
@@ -92,6 +108,8 @@ export const login = async (req, res) => {
             profile: user.profile
         }
 
+        // Set the JWT as an httpOnly cookie (1 day expiry) rather than returning it in the response body,
+        // so the frontend can't access it via JS (mitigates XSS token theft)
         return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
             message: `Welcome back ${user.fullname}`,
             user,
@@ -101,6 +119,8 @@ export const login = async (req, res) => {
         console.log(error);
     }
 }
+
+// GET/POST /logout - clears the auth cookie by overwriting it with an empty value and 0 maxAge
 export const logout = async (req, res) => {
     try {
         return res.status(200).cookie("token", "", { maxAge: 0 }).json({
@@ -111,17 +131,22 @@ export const logout = async (req, res) => {
         console.log(error);
     }
 }
+
+// POST /profile/update - updates the logged-in user's profile fields,
+// including bio, skills, and an optional resume file upload
 export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
         
-        const file = req.file;
+        const file = req.file; // uploaded resume file
         // cloudinary ayega idhar
+        // (Cloudinary upload happens here)
         const fileUri = getDataUri(file);
         const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
 
 
 
+        // skills is expected as a comma-separated string, split into an array
         let skillsArray;
         if(skills){
             skillsArray = skills.split(",");
@@ -136,6 +161,7 @@ export const updateProfile = async (req, res) => {
             })
         }
         // updating data
+        // Only overwrite fields that were actually provided, keeping existing values otherwise
         if(fullname) user.fullname = fullname
         if(email) user.email = email
         if(phoneNumber)  user.phoneNumber = phoneNumber
@@ -143,6 +169,7 @@ export const updateProfile = async (req, res) => {
         if(skills) user.profile.skills = skillsArray
       
         // resume comes later here...
+        // Save the resume URL/filename only if a Cloudinary upload actually happened
         if(cloudResponse){
             user.profile.resume = cloudResponse.secure_url // save the cloudinary url
             user.profile.resumeOriginalName = file.originalname // Save the original file name
@@ -151,6 +178,7 @@ export const updateProfile = async (req, res) => {
 
         await user.save();
 
+        // Strip sensitive fields (like password) before sending the updated user object back
         user = {
             _id: user._id,
             fullname: user.fullname,
