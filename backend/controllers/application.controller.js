@@ -1,9 +1,10 @@
 import { Application } from "../models/application.model.js";
 import { Job } from "../models/job.model.js";
 
+// POST /apply/:id - lets a logged-in user apply to a job, preventing duplicate applications
 export const applyJob = async (req, res) => {
     try {
-        const userId = req.id;
+        const userId = req.id; // set by auth middleware (not shown) from the decoded JWT
         const jobId = req.params.id;
         if (!jobId) {
             return res.status(400).json({
@@ -35,6 +36,7 @@ export const applyJob = async (req, res) => {
             applicant:userId,
         });
 
+        // link the new application to the job's applications list
         job.applications.push(newApplication._id);
         await job.save();
         return res.status(201).json({
@@ -42,9 +44,14 @@ export const applyJob = async (req, res) => {
             success:true
         })
     } catch (error) {
+        // Note: no res.status(500) sent here — if an error occurs, the request will hang
+        // without a response since only console.log(error) runs in the catch block
         console.log(error);
     }
 };
+
+// GET /applied-jobs - returns all jobs the logged-in user has applied to,
+// with job and company details populated, newest first
 export const getAppliedJobs = async (req,res) => {
     try {
         const userId = req.id;
@@ -56,6 +63,8 @@ export const getAppliedJobs = async (req,res) => {
                 options:{sort:{createdAt:-1}},
             }
         });
+        // Note: Application.find() returns an array (never null/undefined), so this check
+        // effectively never triggers even when there are zero applications (empty array is truthy)
         if(!application){
             return res.status(404).json({
                 message:"No Applications",
@@ -70,7 +79,10 @@ export const getAppliedJobs = async (req,res) => {
         console.log(error);
     }
 }
+
 // admin dekhega kitna user ne apply kiya hai
+// (admin will see how many users have applied)
+// GET /applicants/:id - admin-facing: returns a job along with all its applicants' details
 export const getApplicants = async (req,res) => {
     try {
         const jobId = req.params.id;
@@ -89,12 +101,15 @@ export const getApplicants = async (req,res) => {
         };
         return res.status(200).json({
             job, 
-            succees:true
+            succees:true // note: typo in key name, should probably be "success"
         });
     } catch (error) {
         console.log(error);
     }
 }
+
+// PUT /update-status/:id - admin action to update an applicant's application status
+// (e.g. accepted/rejected)
 export const updateStatus = async (req,res) => {
     try {
         const {status} = req.body;
@@ -116,6 +131,7 @@ export const updateStatus = async (req,res) => {
         };
 
         // update the status
+        // Normalize to lowercase for consistent storage/comparison
         application.status = status.toLowerCase();
         await application.save();
 
