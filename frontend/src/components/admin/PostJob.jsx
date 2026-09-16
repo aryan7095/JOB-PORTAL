@@ -11,9 +11,12 @@ import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 
+// Unused module-level array (see note below)
 const companyArray = [];
 
+// Admin form for creating a new job posting under one of the admin's registered companies
 const PostJob = () => {
+    // Form field state for all job attributes
     const [input, setInput] = useState({
         title: "",
         description: "",
@@ -25,19 +28,27 @@ const PostJob = () => {
         position: 0,
         companyId: ""
     });
+    // Tracks in-flight submit request (disables button, shows spinner)
     const [loading, setLoading]= useState(false);
     const navigate = useNavigate();
 
+    // List of the admin's companies, used to populate the company selector
     const { companies } = useSelector(store => store.company);
+
+    // Generic handler for text/number inputs, updates the matching field by `name` attribute
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
     };
 
+    // Handles selecting a company from the dropdown: looks up the matching company object
+    // by its lowercased name (since the Select's value is the lowercased name, not the ID)
+    // and stores its actual _id in the form state
     const selectChangeHandler = (value) => {
         const selectedCompany = companies.find((company)=> company.name.toLowerCase() === value);
         setInput({...input, companyId:selectedCompany._id});
     };
 
+    // Submits the new job posting to the API
     const submitHandler = async (e) => {
         e.preventDefault();
         try {
@@ -64,6 +75,7 @@ const PostJob = () => {
             <Navbar />
             <div className='flex items-center justify-center w-screen my-5'>
                 <form onSubmit = {submitHandler} className='p-8 max-w-4xl border border-gray-200 shadow-lg rounded-md'>
+                    {/* Two-column grid of job detail fields */}
                     <div className='grid grid-cols-2 gap-2'>
                         <div>
                             <Label>Title</Label>
@@ -145,6 +157,7 @@ const PostJob = () => {
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
+                        {/* Company selector — only rendered if the admin has at least one registered company */}
                         {
                             companies.length > 0 && (
                                 <Select onValueChange={selectChangeHandler}>
@@ -167,9 +180,11 @@ const PostJob = () => {
                             )
                         }
                     </div> 
+                    {/* Submit button swaps to a loading spinner state while the post request is in flight */}
                     {
                         loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Post New Job</Button>
                     }
+                    {/* Warning shown if the admin has no companies yet — a job can't be posted without one */}
                     {
                         companies.length === 0 && <p className='text-xs text-red-600 font-bold text-center my-3'>*Please register a company first, before posting a jobs</p>
                     }
