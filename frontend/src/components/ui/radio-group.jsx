@@ -4,11 +4,16 @@ import { Circle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// shadcn/ui-style wrapper around Radix's accessible RadioGroup primitives,
+// applying default Tailwind styling while allowing overrides via `className`
+
+// Container for a group of radio options, laid out as a vertical grid with spacing
 const RadioGroup = React.forwardRef(({ className, ...props }, ref) => {
   return (<RadioGroupPrimitive.Root className={cn("grid gap-2", className)} {...props} ref={ref} />);
 })
 RadioGroup.displayName = RadioGroupPrimitive.Root.displayName
 
+// A single circular radio button, showing a filled dot indicator when selected
 const RadioGroupItem = React.forwardRef(({ className, ...props }, ref) => {
   return (
     (<RadioGroupPrimitive.Item
@@ -18,6 +23,7 @@ const RadioGroupItem = React.forwardRef(({ className, ...props }, ref) => {
         className
       )}
       {...props}>
+      {/* Only rendered when this item is the selected one */}
       <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
         <Circle className="h-2.5 w-2.5 fill-current text-current" />
       </RadioGroupPrimitive.Indicator>
