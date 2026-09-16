@@ -7,11 +7,15 @@ import { toast } from 'sonner';
 import { APPLICATION_API_END_POINT } from '@/utils/constant';
 import axios from 'axios';
 
+// Available status options an admin can set for an applicant's application
 const shortlistingStatus = ["Accepted", "Rejected"];
 
+// Table listing all applicants for a job, with per-applicant details and a status-update action
 const ApplicantsTable = () => {
+    // Applicants data (job + its applications) from Redux state, populated by the Applicants page
     const { applicants } = useSelector(store => store.application);
 
+    // Updates an applicant's application status (Accepted/Rejected) via the API
     const statusHandler = async (status, id) => {
         console.log('called');
         try {
@@ -48,12 +52,14 @@ const ApplicantsTable = () => {
                                 <TableCell>{item?.applicant?.email}</TableCell>
                                 <TableCell>{item?.applicant?.phoneNumber}</TableCell>
                                 <TableCell >
+                                    {/* Show a clickable resume link if one exists, otherwise "NA" */}
                                     {
                                         item.applicant?.profile?.resume ? <a className="text-blue-600 cursor-pointer" href={item?.applicant?.profile?.resume} target="_blank" rel="noopener noreferrer">{item?.applicant?.profile?.resumeOriginalName}</a> : <span>NA</span>
                                     }
                                 </TableCell>
                                 <TableCell>{item?.applicant.createdAt.split("T")[0]}</TableCell>
                                 <TableCell className="float-right cursor-pointer">
+                                    {/* Popover menu to accept/reject this applicant */}
                                     <Popover>
                                         <PopoverTrigger>
                                             <MoreHorizontal />
