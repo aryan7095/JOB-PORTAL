@@ -3,10 +3,20 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
 
+// shadcn/ui-style wrapper around Radix's unstyled Popover primitives,
+// applying default Tailwind styling/animations while re-exporting the composable pieces
+
+// Root component managing open/closed state — passed through directly, no styling needed
 const Popover = PopoverPrimitive.Root
 
+// Element that toggles the popover open when clicked — passed through directly
+// (used throughout this app, e.g. AdminJobsTable/CompaniesTable/ApplicantsTable's
+// "MoreHorizontal" action menus, and Navbar's avatar dropdown)
 const PopoverTrigger = PopoverPrimitive.Trigger
 
+// The popover's floating content box: positioned relative to its trigger,
+// rendered in a Portal (outside normal DOM hierarchy), with directional slide-in
+// animations depending on which side of the trigger it appears on
 const PopoverContent = React.forwardRef(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
