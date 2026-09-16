@@ -10,11 +10,14 @@ import { USER_API_END_POINT } from '@/utils/constant'
 import { setUser } from '@/redux/authSlice'
 import { toast } from 'sonner'
 
+// Site-wide navbar with role-aware nav links and a user avatar dropdown (profile/logout)
 const Navbar = () => {
+    // Logged-in user from Redux auth state
     const { user } = useSelector(store => store.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    // Logs the user out via the API, clears Redux auth state, and redirects home
     const logoutHandler = async () => {
         try {
             const res = await axios.get(`${USER_API_END_POINT}/logout`, { withCredentials: true });
@@ -31,10 +34,13 @@ const Navbar = () => {
     return (
         <div className='bg-white'>
             <div className='flex items-center justify-between mx-auto max-w-7xl h-16'>
+                {/* Brand/logo */}
                 <div>
                     <h1 className='text-2xl font-bold'>Job<span className='text-[#F83002]'>Portal</span></h1>
                 </div>
                 <div className='flex items-center gap-12'>
+                    {/* Nav links differ based on role: recruiters see admin-facing links,
+                        everyone else (students / logged-out visitors) sees the standard job-browsing links */}
                     <ul className='flex font-medium items-center gap-5'>
                         {
                             user && user.role === 'recruiter' ? (
@@ -53,6 +59,7 @@ const Navbar = () => {
 
 
                     </ul>
+                    {/* Right side: login/signup buttons if logged out, or an avatar dropdown if logged in */}
                     {
                         !user ? (
                             <div className='flex items-center gap-2'>
@@ -68,6 +75,7 @@ const Navbar = () => {
                                 </PopoverTrigger>
                                 <PopoverContent className="w-80">
                                     <div className=''>
+                                        {/* User summary: avatar, name, and bio */}
                                         <div className='flex gap-2 space-y-2'>
                                             <Avatar className="cursor-pointer">
                                                 <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" />
@@ -78,6 +86,8 @@ const Navbar = () => {
                                             </div>
                                         </div>
                                         <div className='flex flex-col my-2 text-gray-600'>
+                                            {/* "View Profile" link only shown to students (recruiters presumably
+                                                manage their presence via companies/jobs instead) */}
                                             {
                                                 user && user.role === 'student' && (
                                                     <div className='flex w-fit items-center gap-2 cursor-pointer'>
