@@ -2,6 +2,9 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// shadcn/ui Input component: a plain <input> with default Tailwind styling,
+// allowing overrides via `className` and supporting any native input `type`
+// (text, email, password, file, radio, number, etc. — all seen used throughout this app)
 const Input = React.forwardRef(({ className, type, ...props }, ref) => {
   return (
     (<input
