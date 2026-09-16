@@ -10,10 +10,15 @@ import { toast } from 'sonner'
 import { useDispatch } from 'react-redux'
 import { setSingleCompany } from '@/redux/companySlice'
 
+// First step of company onboarding: just collects a company name,
+// creates the company, then redirects to its full edit/setup page
 const CompanyCreate = () => {
     const navigate = useNavigate();
     const [companyName, setCompanyName] = useState();
     const dispatch = useDispatch();
+
+    // Registers the new company via the API, stores it in Redux,
+    // and navigates to that company's detail/edit page
     const registerNewCompany = async () => {
         try {
             const res = await axios.post(`${COMPANY_API_END_POINT}/register`, {companyName}, {
