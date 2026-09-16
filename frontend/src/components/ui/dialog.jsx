@@ -4,14 +4,22 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// shadcn/ui-style wrapper around Radix's unstyled Dialog (modal) primitives,
+// applying default Tailwind styling/animations while re-exporting the composable pieces
+
+// Root component managing open/closed state — passed through directly, no styling needed
 const Dialog = DialogPrimitive.Root
 
+// Element that toggles the dialog open when clicked — passed through directly
 const DialogTrigger = DialogPrimitive.Trigger
 
+// Portal that renders dialog content outside the normal DOM hierarchy (e.g. at the body level)
 const DialogPortal = DialogPrimitive.Portal
 
+// Element that closes the dialog when clicked — passed through directly
 const DialogClose = DialogPrimitive.Close
 
+// Dark semi-transparent backdrop shown behind the dialog, with fade in/out animations
 const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
@@ -23,6 +31,8 @@ const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
+// The dialog's main content box: centered on screen, with slide/fade/zoom animations
+// on open/close, rendered inside a Portal above the Overlay, and including a close (X) button
 const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
@@ -34,9 +44,11 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
       )}
       {...props}>
       {children}
+      {/* Close (X) button in the top-right corner, always rendered inside the content */}
       <DialogPrimitive.Close
         className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
         <X className="h-4 w-4" />
+        {/* Visually hidden text for screen readers, since the icon alone isn't descriptive */}
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
@@ -44,6 +56,8 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
 ))
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
+// Layout wrapper for a dialog's header area (typically holds DialogTitle/DialogDescription),
+// centered on mobile, left-aligned on larger screens
 const DialogHeader = ({
   className,
   ...props
@@ -54,6 +68,8 @@ const DialogHeader = ({
 )
 DialogHeader.displayName = "DialogHeader"
 
+// Layout wrapper for a dialog's footer area (typically holds action buttons),
+// stacked in reverse on mobile, right-aligned row on larger screens
 const DialogFooter = ({
   className,
   ...props
@@ -64,6 +80,7 @@ const DialogFooter = ({
 )
 DialogFooter.displayName = "DialogFooter"
 
+// Dialog title text, styled as a bold heading
 const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
@@ -72,6 +89,7 @@ const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
 ))
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
+// Dialog description/subtext, styled in muted gray
 const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
