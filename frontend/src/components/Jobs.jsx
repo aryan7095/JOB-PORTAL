@@ -6,13 +6,20 @@ import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 
 // const jobsArray = [1, 2, 3, 4, 5, 6, 7, 8];
+// (unused, commented-out leftover code)
 
+// "Jobs" page: shows a filterable/searchable grid of all jobs, with a sidebar filter panel
+// and animated entrance for each job card
 const Jobs = () => {
+    // Full job list and the currently active search/filter query, both from Redux state
     const { allJobs, searchedQuery } = useSelector(store => store.job);
+    // Locally filtered jobs, recomputed whenever the source data or query changes
     const [filterJobs, setFilterJobs] = useState(allJobs);
 
+    // Recompute the filtered job list whenever allJobs or searchedQuery changes
     useEffect(() => {
         if (searchedQuery) {
+            // Case-insensitive match against title, description, or location
             const filteredJobs = allJobs.filter((job) => {
                 return job.title.toLowerCase().includes(searchedQuery.toLowerCase()) ||
                     job.description.toLowerCase().includes(searchedQuery.toLowerCase()) ||
@@ -20,6 +27,7 @@ const Jobs = () => {
             })
             setFilterJobs(filteredJobs)
         } else {
+            // No active query — show all jobs
             setFilterJobs(allJobs)
         }
     }, [allJobs, searchedQuery]);
@@ -29,15 +37,19 @@ const Jobs = () => {
             <Navbar />
             <div className='max-w-7xl mx-auto mt-5'>
                 <div className='flex gap-5'>
+                    {/* Sidebar filter panel */}
                     <div className='w-20%'>
                         <FilterCard />
                     </div>
+                    {/* Empty state vs. scrollable grid of animated job cards */}
                     {
                         filterJobs.length <= 0 ? <span>Job not found</span> : (
                             <div className='flex-1 h-[88vh] overflow-y-auto pb-5'>
                                 <div className='grid grid-cols-3 gap-4'>
                                     {
                                         filterJobs.map((job) => (
+                                            // Each job card slides/fades in from the right on mount,
+                                            // and would fade/slide out to the left on removal (via framer-motion)
                                             <motion.div
                                                 initial={{ opacity: 0, x: 100 }}
                                                 animate={{ opacity: 1, x: 0 }}
