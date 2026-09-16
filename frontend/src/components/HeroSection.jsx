@@ -5,11 +5,15 @@ import { useDispatch } from 'react-redux';
 import { setSearchedQuery } from '@/redux/jobSlice';
 import { useNavigate } from 'react-router-dom';
 
+// Homepage hero section: headline, tagline, and a search bar that kicks off a job search
 const HeroSection = () => {
+    // Search input value
     const [query, setQuery] = useState("");
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    // Sets the search query in Redux and navigates to the Browse (search results) page,
+    // where useGetAllJobs will fetch matching jobs
     const searchJobHandler = () => {
         dispatch(setSearchedQuery(query));
         navigate("/browse");
@@ -18,9 +22,12 @@ const HeroSection = () => {
     return (
         <div className='text-center'>
             <div className='flex flex-col gap-5 my-10'>
+                {/* Small badge/tagline above the main heading */}
                 <span className=' mx-auto px-4 py-2 rounded-full bg-gray-100 text-[#F83002] font-medium'>No. 1 Job Hunt Website</span>
                 <h1 className='text-5xl font-bold'>Search, Apply & <br /> Get Your <span className='text-[#6A38C2]'>Dream Jobs</span></h1>
+                {/* Placeholder lorem ipsum subtext */}
                 <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid aspernatur temporibus nihil tempora dolor!</p>
+                {/* Search bar: text input + search icon button, styled as a pill shape */}
                 <div className='flex w-[40%] shadow-lg border border-gray-200 pl-3 rounded-full items-center gap-4 mx-auto'>
                     <input
                         type="text"
