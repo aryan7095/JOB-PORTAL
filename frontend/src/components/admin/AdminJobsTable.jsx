@@ -6,18 +6,25 @@ import { Edit2, Eye, MoreHorizontal } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
+// Table displaying the admin's posted jobs, filterable by the search text
+// set in AdminJobs.jsx (stored in Redux as searchJobByText)
 const AdminJobsTable = () => { 
+    // Full list of admin jobs and the current search text, both from Redux state
     const {allAdminJobs, searchJobByText} = useSelector(store=>store.job);
 
+    // Locally filtered jobs, recomputed whenever the source data or search text changes
     const [filterJobs, setFilterJobs] = useState(allAdminJobs);
     const navigate = useNavigate();
 
+    // Recompute the filtered job list whenever allAdminJobs or searchJobByText changes
     useEffect(()=>{ 
         console.log('called');
         const filteredJobs = allAdminJobs.filter((job)=>{
+            // No search text — show all jobs
             if(!searchJobByText){
                 return true;
             };
+            // Case-insensitive match against job title or company name
             return job?.title?.toLowerCase().includes(searchJobByText.toLowerCase()) || job?.company?.name.toLowerCase().includes(searchJobByText.toLowerCase());
 
         });
@@ -38,18 +45,24 @@ const AdminJobsTable = () => {
                 <TableBody>
                     {
                         filterJobs?.map((job) => (
+                            // Note: no `key` prop set on this row (see note below)
                             <tr>
                                 <TableCell>{job?.company?.name}</TableCell>
                                 <TableCell>{job?.title}</TableCell>
+                                {/* Extract just the date portion (YYYY-MM-DD) from the ISO timestamp */}
                                 <TableCell>{job?.createdAt.split("T")[0]}</TableCell>
                                 <TableCell className="text-right cursor-pointer">
+                                    {/* Popover menu with per-job actions */}
                                     <Popover>
                                         <PopoverTrigger><MoreHorizontal /></PopoverTrigger>
                                         <PopoverContent className="w-32">
+                                            {/* Edit action — note: navigates to a "companies" route using the job's ID
+                                                (see note below, this looks like it may be a copy-paste mismatch) */}
                                             <div onClick={()=> navigate(`/admin/companies/${job._id}`)} className='flex items-center gap-2 w-fit cursor-pointer'>
                                                 <Edit2 className='w-4' />
                                                 <span>Edit</span>
                                             </div>
+                                            {/* View applicants for this job */}
                                             <div onClick={()=> navigate(`/admin/jobs/${job._id}/applicants`)} className='flex items-center w-fit gap-2 cursor-pointer mt-2'>
                                                 <Eye className='w-4'/>
                                                 <span>Applicants</span>
