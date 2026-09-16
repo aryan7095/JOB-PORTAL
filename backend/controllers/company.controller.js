@@ -2,6 +2,7 @@ import { Company } from "../models/company.model.js";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 
+// POST /register - creates a new company profile, owned by the logged-in user (recruiter)
 export const registerCompany = async (req, res) => {
     try {
         const { companyName } = req.body;
@@ -11,6 +12,7 @@ export const registerCompany = async (req, res) => {
                 success: false
             });
         }
+        // Prevent duplicate companies with the same name
         let company = await Company.findOne({ name: companyName });
         if (company) {
             return res.status(400).json({
@@ -20,7 +22,7 @@ export const registerCompany = async (req, res) => {
         };
         company = await Company.create({
             name: companyName,
-            userId: req.id
+            userId: req.id // set by auth middleware (not shown) from the decoded JWT
         });
 
         return res.status(201).json({
@@ -32,10 +34,14 @@ export const registerCompany = async (req, res) => {
         console.log(error);
     }
 }
+
+// GET /company - returns all companies owned by the logged-in user
 export const getCompany = async (req, res) => {
     try {
         const userId = req.id; // logged in user id
         const companies = await Company.find({ userId });
+        // Note: Company.find() returns an array (never null/undefined), so this check
+        // effectively never triggers even when the user has zero companies (empty array is truthy)
         if (!companies) {
             return res.status(404).json({
                 message: "Companies not found.",
@@ -50,7 +56,9 @@ export const getCompany = async (req, res) => {
         console.log(error);
     }
 }
+
 // get company by id
+// GET /company/:id - returns a single company's details by ID
 export const getCompanyById = async (req, res) => {
     try {
         const companyId = req.params.id;
@@ -69,12 +77,16 @@ export const getCompanyById = async (req, res) => {
         console.log(error);
     }
 }
+
+// PUT /company/:id - updates a company's profile info, including uploading a new logo to Cloudinary
 export const updateCompany = async (req, res) => {
     try {
         const { name, description, website, location } = req.body;
  
-        const file = req.file;
+        const file = req.file; // uploaded logo file (expects multer middleware upstream, not shown)
         // idhar cloudinary ayega
+        // (Cloudinary upload happens here)
+        // Convert the uploaded file buffer into a data URI, then upload it to Cloudinary
         const fileUri = getDataUri(file);
         const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
         const logo = cloudResponse.secure_url;
