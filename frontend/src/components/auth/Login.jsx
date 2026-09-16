@@ -12,20 +12,25 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setLoading, setUser } from '@/redux/authSlice'
 import { Loader2 } from 'lucide-react'
 
+// Login page: authenticates with email/password, scoped to a role (student or recruiter)
 const Login = () => {
+    // Form field state
     const [input, setInput] = useState({
         email: "",
         password: "",
         role: "",
     });
+    // Loading flag and current user, both from Redux auth state
     const { loading,user } = useSelector(store => store.auth);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    // Generic handler for text/radio inputs, updates the matching field by `name` attribute
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
     }
 
+    // Submits login credentials to the API
     const submitHandler = async (e) => {
         e.preventDefault();
         try {
@@ -37,6 +42,7 @@ const Login = () => {
                 withCredentials: true,
             });
             if (res.data.success) {
+                // Store the logged-in user in Redux and redirect home
                 dispatch(setUser(res.data.user));
                 navigate("/");
                 toast.success(res.data.message);
@@ -48,6 +54,8 @@ const Login = () => {
             dispatch(setLoading(false));
         }
     }
+
+    // If the user is already logged in, redirect away from the login page on mount
     useEffect(()=>{
         if(user){
             navigate("/");
@@ -80,6 +88,7 @@ const Login = () => {
                             placeholder="patel@gmail.com"
                         />
                     </div>
+                    {/* Role selector: student vs recruiter, required to match the account's stored role on the backend */}
                     <div className='flex items-center justify-between'>
                         <RadioGroup className="flex items-center gap-4 my-5">
                             <div className="flex items-center space-x-2">
@@ -106,6 +115,7 @@ const Login = () => {
                             </div>
                         </RadioGroup>
                     </div>
+                    {/* Submit button swaps to a loading spinner state while the login request is in flight */}
                     {
                         loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
                     }
